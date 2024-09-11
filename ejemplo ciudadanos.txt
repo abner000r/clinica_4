@@ -1,0 +1,85 @@
+CREATE DATABASE fs2024_ejemplo_ciudadanos;
+USE fs2024_ejemplo_ciudadanos;
+
+CREATE TABLE niveles_academicos(
+	cod_nivel_acad INT AUTO_INCREMENT PRIMARY KEY,
+	nombre VARCHAR(50) NOT NULL,
+	descripcion VARCHAR(150) 
+);
+CREATE TABLE regiones(
+	cod_region SMALLINT AUTO_INCREMENT PRIMARY KEY,
+	nombre VARCHAR(75) NOT NULL,
+	descripcion VARCHAR(200)
+);
+CREATE TABLE departamentos(
+	cod_depto SMALLINT AUTO_INCREMENT PRIMARY KEY,
+	nombre VARCHAR(100) NOT NULL,
+	cod_region SMALLINT
+);
+CREATE TABLE municipios(
+	cod_muni SMALLINT AUTO_INCREMENT PRIMARY KEY,
+	nombre VARCHAR(100) NOT NULL,
+	cod_depto SMALLINT
+); 
+CREATE TABLE ciudadanos(
+	dpi BIGINT(13) PRIMARY KEY,
+	apellido VARCHAR(60) NOT NULL,
+	nombre VARCHAR(60) NOT NULL,
+	direccion VARCHAR(150),
+	tel_movil INT(8),
+	fechanac DATE,
+	cod_nivel_acad INT,
+	cod_muni SMALLINT
+	
+);
+/*ADD = Agregar */
+/*AFTER= para despues del campo existente*/
+ALTER TABLE ciudadanos 
+	ADD email VARCHAR(100) AFTER tel_movil;
+/*DROP= eliminar*/
+ALTER TABLE ciudadanos 
+	DROP email;
+	
+ALTER TABLE ciudadanos
+	ADD correlativo BIGINT FIRST;
+ALTER TABLE ciudadanos 
+	DROP correlativo;
+	
+
+ALTER table departamentos
+	ADD CONSTRAINT fk_cod_region FOREIGN KEY(cod_region)
+	REFERENCES regiones(cod_region)
+	ON UPDATE CASCADE 
+	ON DELETE CASCADE;
+
+ALTER TABLE municipios
+	ADD CONSTRAINT fk_cod_depto FOREIGN KEY(cod_depto)
+	REFERENCES departamentos(cod_depto)
+	ON UPDATE CASCADE 
+	ON DELETE CASCADE;
+
+ALTER TABLE ciudadanos
+	ADD CONSTRAINT fk_cod_muni FOREIGN KEY(cod_muni)
+	REFERENCES municipios(cod_muni)
+	ON UPDATE CASCADE
+	ON DELETE CASCADE;
+	
+ALTER TABLE ciudadanos
+	ADD CONSTRAINT fk_cod_nivel_acad FOREIGN KEY(cod_nivel_acad)
+	REFERENCES niveles_academicos(cod_nivel_acad)
+	ON UPDATE CASCADE 
+	ON DELETE CASCADE;
+	
+CREATE TABLE sedes_municipales(
+	cod_sede INT AUTO_INCREMENT PRIMARY KEY,
+	nombre VARCHAR(100)NOT NULL,
+	direccion VARCHAR(200) NOT NULL,
+	telefono INT(8) NOT NULL,
+	cod_muni SMALLINT
+);
+
+ALTER TABLE sedes_municipales
+	ADD CONSTRAINT fk2_cod_muni FOREIGN KEY(cod_muni)
+	REFERENCES municipios(cod_muni)
+	ON UPDATE CASCADE 
+	ON DELETE CASCADE;

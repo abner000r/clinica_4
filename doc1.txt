@@ -1,0 +1,15 @@
+https://play2048.co/
+	El evento de este juego seria que se juega con las flechas del teclado	
+https://flappybird.io/
+	Se juega dando click con el mouse o con la barra espaciadora del teclado	
+https://playsnake.org/
+	Se juega con las flechas del teclado	
+https://tetris.com/play-tetris
+	Se juega con las flechas del teclado	
+https://supermarioemulator.com/supermario.php
+	Se juega con las flechas del teclado y con shift  barra espaciadora 	
+ 
+Impide darle click derecho 
+Con un click se marcan todas las opciones de un formulario
+Con click aumenta y disminuye el tamaño de la pagina
+Funciona dando click en las letras que aparecen en la pantalla

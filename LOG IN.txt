@@ -1,0 +1,202 @@
+LOgin //////
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+); base de datos 
+
+2-------------
+
+configigurar la base de datos->
+public $default = [
+    'DSN'      => '',
+    'hostname' => 'localhost',
+    'username' => 'tu_usuario_db',
+    'password' => 'tu_contraseña_db',
+    'database' => 'nombre_de_tu_base_de_datos',
+    'DBDriver' => 'MySQLi',
+    'DBPrefix' => '',
+    'pConnect' => false,
+    'DBDebug'  => (ENVIRONMENT !== 'production'),
+    'charset'  => 'utf8',
+    'DBCollat' => 'utf8_general_ci',
+    'swapPre'  => '',
+    'encrypt'  => false,
+    'compress' => false,
+    'strictOn' => false,
+    'failover' => [],
+    'port'     => 3306,
+];
+ 3-----------------------------
+
+crear un modelo para ususarios 
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class UserModel extends Model
+{
+    protected $table = 'users';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['username', 'email', 'password'];
+
+    protected $beforeInsert = ['hashPassword'];
+
+    protected function hashPassword(array $data)
+    {
+        if (isset($data['data']['password'])) {
+            $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
+        }
+        return $data;
+    }
+}
+?>
+
+
+
+4------------------------
+crearun controlador par manejar  la autentificacion
+
+<?php
+
+namespace App\Controllers;
+
+use App\Models\UserModel;
+
+class Auth extends BaseController
+{
+    public function register()
+    {
+        return view('register');
+    }
+
+    public function store()
+    {
+        $userModel = new UserModel();
+
+        // Validación
+        $validation = $this->validate([
+            'username' => 'required|min_length[3]|max_length[50]',
+            'email' => 'required|valid_email|is_unique[users.email]',
+            'password' => 'required|min_length[6]',
+            'password_confirm' => 'required|matches[password]'
+        ]);
+
+        if (!$validation) {
+            return view('register', ['validation' => $this->validator]);
+        }
+
+        $userModel->save([
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'password' => $this->request->getPost('password')
+        ]);
+
+        return redirect()->to('/login');
+    }
+
+    public function login()
+    {
+        return view('login');
+    }
+
+    public function authenticate()
+    {
+        $userModel = new UserModel();
+
+        $user = $userModel->where('email', $this->request->getVar('email'))->first();
+
+        if ($user) {
+            if (password_verify($this->request->getVar('password'), $user['password'])) {
+                session()->set([
+                    'id' => $user['id'],
+                    'username' => $user['username'],
+                    'isLoggedIn' => true,
+                ]);
+                return redirect()->to('/dashboard');
+            } else {
+                session()->setFlashdata('error', 'Incorrect password.');
+                return redirect()->back();
+            }
+        } else {
+            session()->setFlashdata('error', 'Email not found.');
+            return redirect()->back();
+        }
+    }
+
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to('/login');
+    }
+}
+?>
+
+5----------------
+crear las vistas  para el registro  e inicio de secion
+REGISTRER ------
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form action="/auth/store" method="post">
+        <?= csrf_field() ?>
+        <input type="text" name="username" placeholder="Username">
+        <input type="email" name="email" placeholder="Email">
+        <input type="password" name="password" placeholder="Password">
+        <input type="password" name="password_confirm" placeholder="Confirm Password">
+        <button type="submit">Register</button>
+    </form>
+    <?php if (isset($validation)): ?>
+        <div>
+            <?= $validation->listErrors() ?>
+        </div>
+    <?php endif; ?>
+</body>
+</html>
+
+
+
+LOGIN---------------
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="/auth/authenticate" method="post">
+        <?= csrf_field() ?>
+        <input type="email" name="email" placeholder="Email">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit">Login</button>
+    </form>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+    <?php endif; ?>
+</body>
+</html>
+
+
+
+6--------------
+ CONFIGURACION DE RUTAS 
+
+
+$routes->get('register', 'Auth::register');
+$routes->post('auth/store', 'Auth::store');
+$routes->get('login', 'Auth::login');
+$routes->post('auth/authenticate', 'Auth::authenticate');
+$routes->get('logout', 'Auth::logout');
+

@@ -1,0 +1,10 @@
+git config --global user.name ""
+Abner Muñoz <---User
+git init para iniciar el repositorio
+git status ver el estado de los archivod verde inicio rojo aun no inicia 
+git add . agrega todo lo de el archivo
+git config --global user.email""
+add
+commit
+pull
+push
